@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,10 +51,16 @@ export function AuthForm({ mode }: AuthFormProps) {
       } else {
         await authApi.login({ email, password });
       }
+      toast.success(
+        isSignup ? "Account created successfully" : "Logged in successfully",
+      );
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
+      const message =
+        err instanceof ApiError ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

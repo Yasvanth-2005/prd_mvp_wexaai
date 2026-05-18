@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { FormField } from "@/components/form-field";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -53,7 +54,9 @@ export function ProductForm({ mode, product }: ProductFormProps) {
 
     const qty = Number(quantityOnHand);
     if (!Number.isInteger(qty) || qty < 0) {
-      setError("Quantity must be a whole number zero or greater");
+      const message = "Quantity must be a whole number zero or greater";
+      setError(message);
+      toast.error(message);
       setLoading(false);
       return;
     }
@@ -73,14 +76,22 @@ export function ProductForm({ mode, product }: ProductFormProps) {
 
     try {
       if (isEdit && product) {
-        await productsApi.update(product.id, payload);
+        const { product: updated } = await productsApi.update(
+          product.id,
+          payload,
+        );
+        toast.success(`${updated.name} updated successfully`);
       } else {
-        await productsApi.create(payload);
+        const { product: created } = await productsApi.create(payload);
+        toast.success(`${created.name} created successfully`);
       }
       router.push("/products");
       router.refresh();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
+      const message =
+        err instanceof ApiError ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -128,7 +139,7 @@ export function ProductForm({ mode, product }: ProductFormProps) {
       </FormField>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField id="costPrice" label="Cost price (optional)">
+        <FormField id="costPrice" label="Cost price in ₹ (optional)">
           <Input
             id="costPrice"
             type="number"
@@ -139,7 +150,7 @@ export function ProductForm({ mode, product }: ProductFormProps) {
           />
         </FormField>
 
-        <FormField id="sellingPrice" label="Selling price (optional)">
+        <FormField id="sellingPrice" label="Selling price in ₹ (optional)">
           <Input
             id="sellingPrice"
             type="number"

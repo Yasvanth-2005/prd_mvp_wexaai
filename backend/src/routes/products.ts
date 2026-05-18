@@ -3,6 +3,7 @@ import { Prisma } from "../generated/prisma/client";
 import { asyncHandler } from "../lib/asyncHandler";
 import { prisma } from "../lib/prisma";
 import { serializeProduct } from "../lib/productSerializer";
+import { paginationMeta, parsePagination } from "../lib/pagination";
 import { requireParam } from "../lib/routeParams";
 import { authMiddleware } from "../middleware/auth";
 import { AppError } from "../middleware/errorHandler";
@@ -59,26 +60,39 @@ productsRouter.get(
     const organization = await getOrganizationOrThrow(req.organizationId);
     const search =
       typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const { page, pageSize, skip } = parsePagination(
+      req.query as Record<string, unknown>,
+    );
 
-    const products = await prisma.product.findMany({
-      where: {
-        organizationId: organization.id,
-        ...(search
-          ? {
-              OR: [
-                { name: { contains: search, mode: "insensitive" } },
-                { sku: { contains: search, mode: "insensitive" } },
-              ],
-            }
-          : {}),
-      },
-      orderBy: { name: "asc" },
-    });
+    const where = {
+      organizationId: organization.id,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" as const } },
+              { sku: { contains: search, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
+
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy: { name: "asc" },
+        skip,
+        take: pageSize,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    const meta = paginationMeta(total, page, pageSize);
 
     res.json({
       products: products.map((product) =>
         serializeProduct(product, organization.defaultLowStockThreshold),
       ),
+      pagination: meta,
     });
   }),
 );

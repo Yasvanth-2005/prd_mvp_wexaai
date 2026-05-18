@@ -1,4 +1,8 @@
 import { api } from "./api";
+import {
+  buildProductsListQuery,
+  type ProductsListParams,
+} from "./products-list";
 import type {
   AuthResponse,
   DashboardSummary,
@@ -20,12 +24,10 @@ export const authApi = {
 };
 
 export const productsApi = {
-  list: (search?: string) => {
-    const query = search?.trim()
-      ? `?search=${encodeURIComponent(search.trim())}`
-      : "";
-    return api.get<ProductsListResponse>(`/api/products${query}`);
-  },
+  list: (params: ProductsListParams = {}) =>
+    api.get<ProductsListResponse>(
+      `/api/products${buildProductsListQuery(params)}`,
+    ),
   get: (id: string) => api.get<ProductResponse>(`/api/products/${id}`),
   create: (data: CreateProductInput) =>
     api.post<ProductResponse>("/api/products", data),

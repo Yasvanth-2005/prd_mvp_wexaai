@@ -2,6 +2,10 @@ import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/lib/auth-cookie";
 import { ApiError } from "@/lib/api";
 import { getServerApiBaseUrl } from "@/lib/env";
+import {
+  buildProductsListQuery,
+  type ProductsListParams,
+} from "@/lib/products-list";
 
 async function serverRequest<T>(
   path: string,
@@ -42,14 +46,10 @@ export const serverDashboardApi = {
 };
 
 export const serverProductsApi = {
-  list: (search?: string) => {
-    const query = search?.trim()
-      ? `?search=${encodeURIComponent(search.trim())}`
-      : "";
-    return serverRequest<import("./types").ProductsListResponse>(
-      `/api/products${query}`,
-    );
-  },
+  list: (params: ProductsListParams = {}) =>
+    serverRequest<import("./types").ProductsListResponse>(
+      `/api/products${buildProductsListQuery(params)}`,
+    ),
   get: (id: string) =>
     serverRequest<import("./types").ProductResponse>(`/api/products/${id}`),
 };

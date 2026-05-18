@@ -33,8 +33,16 @@ export interface Product {
   updatedAt: string;
 }
 
+export interface ProductsPagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface ProductsListResponse {
   products: Product[];
+  pagination: ProductsPagination;
 }
 
 export interface ProductResponse {

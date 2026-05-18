@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { FormField } from "@/components/form-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,26 +15,29 @@ interface SettingsFormProps {
 export function SettingsForm({ initialThreshold }: SettingsFormProps) {
   const [threshold, setThreshold] = useState(String(initialThreshold));
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setSuccess(null);
 
     const value = Number(threshold);
     if (!Number.isInteger(value) || value < 0) {
-      setError("Threshold must be a whole number zero or greater");
+      const message = "Threshold must be a whole number zero or greater";
+      setError(message);
+      toast.error(message);
       return;
     }
 
     setLoading(true);
     try {
       await settingsApi.update(value);
-      setSuccess("Settings saved.");
+      toast.success("Settings saved successfully");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
+      const message =
+        err instanceof ApiError ? err.message : "Something went wrong";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -65,12 +69,6 @@ export function SettingsForm({ initialThreshold }: SettingsFormProps) {
           {error}
         </p>
       ) : null}
-      {success ? (
-        <p className="text-sm text-green-600 dark:text-green-400" role="status">
-          {success}
-        </p>
-      ) : null}
-
       <Button type="submit" disabled={loading}>
         {loading ? "Saving…" : "Save settings"}
       </Button>
