@@ -11,6 +11,7 @@ node_modules
 # build output
 dist
 build
+src/generated
 
 # logs
 logs
