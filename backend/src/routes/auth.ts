@@ -15,13 +15,38 @@ import { loginSchema, signupSchema } from "../validators/auth";
 export const authRouter = Router();
 
 function setAuthCookie(res: import("express").Response, token: string): void {
+  const isProduction = process.env.NODE_ENV === "production";
   res.cookie(AUTH_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     maxAge: AUTH_COOKIE_MAX_AGE_MS,
     path: "/",
   });
+}
+
+function authJsonPayload(
+  user: { id: string; email: string; organizationId: string },
+  organization: {
+    id: string;
+    name: string;
+    defaultLowStockThreshold: number;
+  },
+  token: string,
+) {
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      organizationId: user.organizationId,
+    },
+    organization: {
+      id: organization.id,
+      name: organization.name,
+      defaultLowStockThreshold: organization.defaultLowStockThreshold,
+    },
+    token,
+  };
 }
 
 authRouter.post(
@@ -63,18 +88,7 @@ authRouter.post(
     });
     setAuthCookie(res, token);
 
-    res.status(201).json({
-      user: {
-        id: user.id,
-        email: user.email,
-        organizationId: organization.id,
-      },
-      organization: {
-        id: organization.id,
-        name: organization.name,
-        defaultLowStockThreshold: organization.defaultLowStockThreshold,
-      },
-    });
+    res.status(201).json(authJsonPayload(user, organization, token));
   }),
 );
 
@@ -103,18 +117,17 @@ authRouter.post(
     });
     setAuthCookie(res, token);
 
-    res.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        organizationId: user.organizationId,
-      },
-      organization: {
-        id: user.organization.id,
-        name: user.organization.name,
-        defaultLowStockThreshold: user.organization.defaultLowStockThreshold,
-      },
-    });
+    res.json(
+      authJsonPayload(
+        user,
+        {
+          id: user.organization.id,
+          name: user.organization.name,
+          defaultLowStockThreshold: user.organization.defaultLowStockThreshold,
+        },
+        token,
+      ),
+    );
   }),
 );
 

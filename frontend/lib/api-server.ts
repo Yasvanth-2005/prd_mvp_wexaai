@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { AUTH_COOKIE_NAME } from "@/lib/auth-cookie";
 import { ApiError } from "@/lib/api";
-import { getApiBaseUrl } from "@/lib/env";
+import { getServerApiBaseUrl } from "@/lib/env";
 
 async function serverRequest<T>(
   path: string,
@@ -10,7 +10,7 @@ async function serverRequest<T>(
   const cookieStore = await cookies();
   const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
 
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+  const response = await fetch(`${getServerApiBaseUrl()}${path}`, {
     ...init,
     cache: "no-store",
     headers: {

@@ -26,7 +26,10 @@ A minimal multi-tenant inventory management app. Each signup creates an organiza
 
 ```
 NEXT_PUBLIC_API_URL=https://stockflow-api-lrkf.onrender.com
+API_URL=https://stockflow-api-lrkf.onrender.com
 ```
+
+`API_URL` is used by the server-side `/api/*` proxy so login sets an **httpOnly cookie on the Vercel domain**. Without it, auth works in the network tab but middleware never sees the session and you stay on `/login?from=/dashboard`.
 
 **Render (backend)**
 
@@ -34,9 +37,9 @@ NEXT_PUBLIC_API_URL=https://stockflow-api-lrkf.onrender.com
 |---------|--------|
 | **Build command** | `npm install && npm run build` |
 | **Start command** | `npm start` |
+| **Root directory** | `backend` (if deploying from monorepo) |
 
 The API runs with **`tsx src/index.ts`** (not compiled `dist/`), because Prisma 7’s generated client is ESM and breaks when compiled to CommonJS for `node dist/index.js`.
-| **Root directory** | `backend` (if deploying from monorepo) |
 
 ```
 DATABASE_URL=<your-postgres-url>

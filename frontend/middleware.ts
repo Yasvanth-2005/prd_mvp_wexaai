@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME } from "@/lib/auth-cookie";
-import { getApiBaseUrl } from "@/lib/env";
+import { getServerApiBaseUrl } from "@/lib/env";
 
 const AUTH_ROUTES = ["/login", "/signup"];
 const PROTECTED_PREFIXES = ["/dashboard", "/products", "/settings"];
@@ -23,7 +23,7 @@ async function hasValidSession(request: NextRequest): Promise<boolean> {
   }
 
   try {
-    const response = await fetch(`${getApiBaseUrl()}/api/auth/me`, {
+    const response = await fetch(`${getServerApiBaseUrl()}/api/auth/me`, {
       headers: {
         cookie: `${AUTH_COOKIE_NAME}=${token}`,
       },
