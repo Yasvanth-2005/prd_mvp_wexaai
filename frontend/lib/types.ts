@@ -33,18 +33,52 @@ export interface Product {
   updatedAt: string;
 }
 
+export interface ProductsListResponse {
+  products: Product[];
+}
+
+export interface ProductResponse {
+  product: Product;
+}
+
+export interface LowStockItem {
+  id: string;
+  name: string;
+  sku: string;
+  quantityOnHand: number;
+  lowStockThreshold: number;
+}
+
 export interface DashboardSummary {
   totalProducts: number;
   totalQuantityOnHand: number;
-  lowStockItems: {
-    id: string;
-    name: string;
-    sku: string;
-    quantityOnHand: number;
-    lowStockThreshold: number;
-  }[];
+  lowStockItems: LowStockItem[];
 }
 
-export interface Settings {
+export interface SettingsResponse {
   defaultLowStockThreshold: number;
+}
+
+export interface CreateProductInput {
+  name: string;
+  sku: string;
+  description?: string;
+  quantityOnHand?: number;
+  costPrice?: number;
+  sellingPrice?: number;
+  lowStockThreshold?: number | null;
+}
+
+export type UpdateProductInput = Partial<CreateProductInput>;
+
+export interface SignupInput {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  organizationName: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password: string;
 }

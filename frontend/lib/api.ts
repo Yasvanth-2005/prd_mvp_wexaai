@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from "./env";
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -8,27 +10,45 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const res = await fetch(path, {
-    ...options,
+type RequestOptions = Omit<RequestInit, "body"> & {
+  body?: unknown;
+};
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const { body, headers, ...rest } = options;
+
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    ...rest,
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
+      ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+      ...headers,
     },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  const data = (await res.json().catch(() => ({}))) as T & { error?: string };
-
-  if (!res.ok) {
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
     throw new ApiError(
-      res.status,
-      (data as { error?: string }).error ?? "Request failed",
+      response.status,
+      payload?.error ?? (response.statusText || "Request failed"),
     );
   }
 
-  return data;
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json() as Promise<T>;
 }
+
+export const api = {
+  get: <T>(path: string) => request<T>(path),
+  post: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: "POST", body }),
+  patch: <T>(path: string, body?: unknown) =>
+    request<T>(path, { method: "PATCH", body }),
+  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+};
