@@ -1,5 +1,6 @@
 "use client";
 
+import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,11 @@ export function LogoutButton() {
   return (
     <Button
       variant="outline"
-      size="sm"
+      className="w-full justify-center gap-2"
       onClick={handleLogout}
       disabled={loading}
     >
+      <LogOut className="size-4 shrink-0" />
       {loading ? "Logging out…" : "Log out"}
     </Button>
   );

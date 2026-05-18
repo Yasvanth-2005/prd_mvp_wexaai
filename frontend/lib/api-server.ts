@@ -40,3 +40,16 @@ export const serverDashboardApi = {
   get: () =>
     serverRequest<import("./types").DashboardSummary>("/api/dashboard"),
 };
+
+export const serverProductsApi = {
+  list: (search?: string) => {
+    const query = search?.trim()
+      ? `?search=${encodeURIComponent(search.trim())}`
+      : "";
+    return serverRequest<import("./types").ProductsListResponse>(
+      `/api/products${query}`,
+    );
+  },
+  get: (id: string) =>
+    serverRequest<import("./types").ProductResponse>(`/api/products/${id}`),
+};
