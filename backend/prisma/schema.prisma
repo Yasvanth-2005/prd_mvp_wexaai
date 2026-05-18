@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +8,51 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+model Organization {
+  id                        String   @id @default(cuid())
+  name                      String
+  defaultLowStockThreshold  Int      @default(5)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  users    User[]
+  products Product[]
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  passwordHash   String
+  organizationId String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stockUpdates          Product[]    @relation("StockUpdatedBy")
+
+  @@index([organizationId])
+}
+
+model Product {
+  id                  String    @id @default(cuid())
+  organizationId      String
+  name                String
+  sku                 String
+  description         String?
+  quantityOnHand      Int       @default(0)
+  costPrice           Decimal?  @db.Decimal(10, 2)
+  sellingPrice        Decimal?  @db.Decimal(10, 2)
+  lowStockThreshold   Int?
+  lastStockUpdatedAt  DateTime?
+  lastStockUpdatedById String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  lastStockUpdatedBy User?        @relation("StockUpdatedBy", fields: [lastStockUpdatedById], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, sku])
+  @@index([organizationId])
 }
