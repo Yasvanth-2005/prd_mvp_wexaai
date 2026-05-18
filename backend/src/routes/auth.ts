@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import {
   AUTH_COOKIE_MAX_AGE_MS,
   AUTH_COOKIE_NAME,
@@ -118,7 +118,7 @@ authRouter.post(
   }),
 );
 
-authRouter.post("/logout", (_req, res) => {
+authRouter.post("/logout", (_req: Request, res: Response) => {
   res.clearCookie(AUTH_COOKIE_NAME, { path: "/" });
   res.json({ message: "Logged out" });
 });

@@ -7,6 +7,54 @@ A minimal multi-tenant inventory management app. Each signup creates an organiza
 - **Backend:** Node.js, Express 5, Prisma 7, PostgreSQL
 - **Frontend:** Next.js 16, React 19, Tailwind CSS, shadcn/ui
 
+## Live deployment
+
+| Service | Platform | URL |
+|---------|----------|-----|
+| Frontend | [Vercel](https://vercel.com) | [https://prd-mvp-wexaai.vercel.app/](https://prd-mvp-wexaai.vercel.app/) |
+| Backend API | [Render](https://render.com) (free tier) | [https://stockflow-api-lrkf.onrender.com](https://stockflow-api-lrkf.onrender.com) |
+
+**Try the app:** open the [StockFlow frontend](https://prd-mvp-wexaai.vercel.app/) and sign up or log in.
+
+**Render free tier — cold starts:** The API runs on Render’s free plan, which spins down after inactivity. The **first request after idle time can take 30–60+ seconds** while the service wakes up. If login or page loads feel slow at first, wait a moment and retry; subsequent requests are much faster until the next sleep cycle.
+
+**Health check:** `GET https://stockflow-api-lrkf.onrender.com/api/health`
+
+### Production environment variables
+
+**Vercel (frontend)**
+
+```
+NEXT_PUBLIC_API_URL=https://stockflow-api-lrkf.onrender.com
+```
+
+**Render (backend)**
+
+| Setting | Value |
+|---------|--------|
+| **Build command** | `npm install && npm run build` |
+| **Start command** | `npm start` |
+| **Root directory** | `backend` (if deploying from monorepo) |
+
+```
+DATABASE_URL=<your-postgres-url>
+JWT_SECRET=<long-random-secret>
+NODE_ENV=production
+FRONTEND_URL=https://prd-mvp-wexaai.vercel.app
+PORT=10000
+```
+
+`FRONTEND_URL` must match the Vercel origin exactly so CORS and auth cookies work across the frontend and API.
+
+After the first deploy, run migrations against production (locally or a one-off Render shell):
+
+```bash
+cd backend
+DATABASE_URL="<production-url>" npm run db:migrate:deploy
+```
+
+Do **not** set `NODE_ENV=production` for the **build** step on Render if you ever move TypeScript back to `devDependencies` — that skips dev packages and breaks `tsc`. This repo keeps `typescript`, `prisma`, and `@types/*` in `dependencies` so production builds succeed.
+
 ## Prerequisites
 
 - Node.js 20+
@@ -62,6 +110,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000)
+
+For local dev, keep `FRONTEND_URL=http://localhost:3000` on the backend and `NEXT_PUBLIC_API_URL=http://localhost:5000` on the frontend.
 
 ## Demo checklist (MVP success criteria)
 
