@@ -34,6 +34,8 @@ NEXT_PUBLIC_API_URL=https://stockflow-api-lrkf.onrender.com
 |---------|--------|
 | **Build command** | `npm install && npm run build` |
 | **Start command** | `npm start` |
+
+The API runs with **`tsx src/index.ts`** (not compiled `dist/`), because Prisma 7’s generated client is ESM and breaks when compiled to CommonJS for `node dist/index.js`.
 | **Root directory** | `backend` (if deploying from monorepo) |
 
 ```
