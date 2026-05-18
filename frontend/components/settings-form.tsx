@@ -1,0 +1,79 @@
+"use client";
+
+import { useState } from "react";
+import { FormField } from "@/components/form-field";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { settingsApi } from "@/lib/api-client";
+import { ApiError } from "@/lib/api";
+
+interface SettingsFormProps {
+  initialThreshold: number;
+}
+
+export function SettingsForm({ initialThreshold }: SettingsFormProps) {
+  const [threshold, setThreshold] = useState(String(initialThreshold));
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    const value = Number(threshold);
+    if (!Number.isInteger(value) || value < 0) {
+      setError("Threshold must be a whole number zero or greater");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await settingsApi.update(value);
+      setSuccess("Settings saved.");
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-md space-y-4">
+      <FormField
+        id="defaultLowStockThreshold"
+        label="Default low stock threshold"
+      >
+        <Input
+          id="defaultLowStockThreshold"
+          type="number"
+          min={0}
+          step={1}
+          value={threshold}
+          onChange={(e) => setThreshold(e.target.value)}
+          required
+        />
+      </FormField>
+      <p className="text-sm text-muted-foreground">
+        Used when a product has no low-stock threshold set. Products at or
+        below this quantity appear in the dashboard low-stock list.
+      </p>
+
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {success ? (
+        <p className="text-sm text-green-600 dark:text-green-400" role="status">
+          {success}
+        </p>
+      ) : null}
+
+      <Button type="submit" disabled={loading}>
+        {loading ? "Saving…" : "Save settings"}
+      </Button>
+    </form>
+  );
+}

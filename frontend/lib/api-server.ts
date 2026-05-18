@@ -53,3 +53,8 @@ export const serverProductsApi = {
   get: (id: string) =>
     serverRequest<import("./types").ProductResponse>(`/api/products/${id}`),
 };
+
+export const serverSettingsApi = {
+  get: () =>
+    serverRequest<import("./types").SettingsResponse>("/api/settings"),
+};
