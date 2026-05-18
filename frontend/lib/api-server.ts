@@ -35,3 +35,8 @@ async function serverRequest<T>(
 export const serverAuthApi = {
   me: () => serverRequest<import("./types").AuthResponse>("/api/auth/me"),
 };
+
+export const serverDashboardApi = {
+  get: () =>
+    serverRequest<import("./types").DashboardSummary>("/api/dashboard"),
+};
